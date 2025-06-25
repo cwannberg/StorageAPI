@@ -1,0 +1,36 @@
+1. Undersök koden som har skapats:
+
+	a, Vilka metoder har genererats?
+        GetProduct() - hämtar alla produkter
+	    GetProduct(int id) - hämtar en specifik produkt
+        PutProduct(int id, Product product) - Uppdaterar/skriver över om id och product.id matchar
+        PostProduct(Product product) - Lägger till en produkt
+        DeleteProduct(int id) - Tar bort en produkt
+        ProductExists(int id) - Kikar om produkten finns
+
+	b, Hur används StorageContext?
+        StorageAPIContext ärver från basklassen DbContext, vilket är en "brygga" mellan databasen och applikationen.
+        Den ansvarar för att hålla ordning på alla entiteter samt att kunna modifiera databasen med LINQ, SQL och migrations.
+
+        StorageAPIContext skapas automatiskt med Dependency injection och skicka in denna i en controllers konstruktor. 
+        Dess fält _context kommer sedan att kunna användas av resten av klassen för att interagera med databasen.
+
+	c, Hur fungerar CreatedAtAction, Ok, NotFound osv?
+        Det är HTTP-responser som berättar hur anropet har gått.
+        CreatedAtAction är statuskod 201 som säger att Resursen skapades.
+        Ok är statuskod 200 som säger att vi fick ett lyckat HTTP-svar och att servern skickar tillbaka önskat innehåll.
+        NotFound är svarskod 404 som säger att vi returnerar utan innehåll. Tex kan URLen var felaktig.
+        Andra vanligt förekommande statuskoder är:
+        BadRequest är svarskod 400 som betyder att begäran är ogiltig. Servern förstår inte vad du skickade, t.ex. fel Id.
+        Unauthorized är svarskod 401 som betyder att klienten inte är autentiserad, t.ex. saknar giltig inloggning
+        Forbidden är svarskod 403 som betyder att klienten inte har behöriget trots autentisering.
+        Conflict är svarskod 409 som betyder att vi t.ex. försöker skapa en resurs som redan finns.
+        Internal server error är svarskod 500 som betyder att servern råkade ut för ett oväntat fel.
+
+        Kodintervall:
+        100-199 - Informativa, berättar att något är på gång. Används sällan i API.
+        200-299 - Lyckade svar/sucess, förfrågan lyckades och servern skickar ev. tillbaka resultat
+        300-399 - Omdirigering/redirection, resursen finns på annan plats. t.ex. 302 Found
+        400-499 - Klientfel/client error, något är fel i det klienten skickade, t.ex. fel data, saknar rättigheter, resurs finns inte)
+        500-599 - Serverfel/server error, något gick snett på serversidan - oftast konfigureringsfel.
+

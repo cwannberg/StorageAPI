@@ -5,7 +5,7 @@ using StorageAPI.Models;
 
 namespace StorageAPI.Controllers;
 
-[Route("api/products")]
+[Route("api/Products")]
 [ApiController]
 public class ProductsController : ControllerBase
 {

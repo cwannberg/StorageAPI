@@ -1,5 +1,8 @@
-﻿namespace StorageAPI.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace StorageAPI.Models
 {
+    [Table ("Products")]
     public class Product
     {
         public int Id { get; set; }
