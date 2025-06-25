@@ -1,4 +1,4 @@
-
+﻿
 using StorageAPI.Data;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +10,8 @@ namespace StorageAPI
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.Services.AddDbContext<StorageAPIContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("StorageAPIContext") ?? throw new InvalidOperationException("Connection string 'StorageAPIContext' not found.")));
 
             builder.Services.AddDbContext<ApplicationContext>(options =>
                options.UseSqlServer(builder.Configuration.GetConnectionString("ApplicationContext") 
