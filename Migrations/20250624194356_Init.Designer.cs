@@ -10,7 +10,7 @@ using StorageAPI.Data;
 
 namespace StorageAPI.Migrations
 {
-    [DbContext(typeof(ApplicationContext))]
+    [DbContext(typeof(StorageAPIContext))]
     [Migration("20250624194356_Init")]
     partial class Init
     {
