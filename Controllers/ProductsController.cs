@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StorageAPI.Data;
+using StorageAPI.DTO;
 using StorageAPI.Models;
 
 namespace StorageAPI.Controllers;
@@ -71,14 +72,22 @@ public class ProductsController : ControllerBase
 
     // POST: api/Products
     [HttpPost]
-    public async Task<ActionResult<Product>> PostProduct(Product product)
+    public async Task<ActionResult<Product>> PostProduct(CreateProductDto createProductDto)
     {
+        var product = new Product
+        {
+            Name = createProductDto.Name,
+            Price = createProductDto.Price,
+            Category = createProductDto.Category,
+            Shelf = createProductDto.Shelf,
+            Count = createProductDto.Count,
+            Description = createProductDto.Description
+        };
+
         _context.Product.Add(product);
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction("GetProduct", new { id = product.Id }, product); //CreatedAtAction returnerar 201 (Resursen skapas med lyckat resultat)
-                                                                                //GetProduct visar var var den nya resursen kan hämtas
-                                                                                //Den nya produkten måste ha ett id
+        return CreatedAtAction("GetProduct", new { id = product.Id }, product); 
     }
 
     // DELETE: api/Products/5
