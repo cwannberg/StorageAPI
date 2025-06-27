@@ -17,7 +17,6 @@ namespace StorageAPI
                options.UseSqlServer(builder.Configuration.GetConnectionString("ApplicationContext") 
                ?? throw new InvalidOperationException("Connection string 'ApplicationContext' not found.")));
 
-
             // Add services to the container.
 
             builder.Services.AddControllers();
@@ -30,12 +29,16 @@ namespace StorageAPI
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
+
+                app.UseSwaggerUI(options =>
+                {
+                    options.SwaggerEndpoint("/openapi/v1.json", "v1");
+                });
             }
 
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
-
 
             app.MapControllers();
 
