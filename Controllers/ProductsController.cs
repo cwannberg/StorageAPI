@@ -39,6 +39,52 @@ public class ProductsController : ControllerBase
         return product;
     }
 
+    //TODO: Gör klart
+    // GET: api/Products/category
+    [HttpGet("{category}")] 
+    public async Task<ActionResult<Product>> GetProductByCategory()
+    { 
+        var product = await _context.Product.FindAsync(); //await hör ihop med att metoden är asynkron. _context är kontakten med databasen. FindAsync letar efter det specifika id:t.
+
+        if (product == null)
+        {
+            return NotFound(); //Retunerar HTTP-resultatet 404 Not Found.
+        }
+
+        return product;
+    }
+
+    //GET: api/products/stats
+    [HttpGet("stats")]
+    public async Task<ActionResult<ProductStatsDto>> GetProductStats()
+    {
+        // Hämta alla produkter från databasen
+        var products =  await _context.Product.ToListAsync();
+
+        // Kontrollera om det finns några produkter
+        if (!products.Any())
+        {
+            return Ok(new ProductStatsDto
+            {
+                TotalProducts = 0,
+                TotalStockValue = 0,
+                AveragePrice = 0
+            });
+        }
+        var totalProducts = _context.Product.Count();
+        var totalStockValue = _context.Product.Sum(p => p.Price * p.Count);
+        var averagePrice = totalProducts > 0 ? _context.Product.Average(p => p.Price) : 0;
+
+        var productStats = new ProductStatsDto
+        {
+            TotalProducts = totalProducts,
+            TotalStockValue = totalStockValue,
+            AveragePrice = averagePrice
+        };
+
+        return productStats;
+    }
+
     // PUT: api/Products/5
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPut("{id}")]
