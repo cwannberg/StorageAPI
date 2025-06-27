@@ -18,33 +18,32 @@ public class ProductsController : ControllerBase
     }
 
     // GET: api/Products
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<Product>>> GetProduct()
+    [HttpGet] 
+    public async Task<ActionResult<IEnumerable<Product>>> GetProduct([FromQuery] string? category)
     {
-        return await _context.Product.ToListAsync();
+        if (string.IsNullOrEmpty(category))
+        {
+            return await _context.Product.ToListAsync();
+        }
+
+        var products = await _context.Product
+            .Where(p => p.Category.ToLower() == category.ToLower())
+            .ToListAsync();
+
+        if (!products.Any())
+        {
+            return NotFound(); 
+        }
+
+        return products;
     }
 
     // GET: api/Products/5
-    [HttpGet("{id}")] //HttpGet är ett attribut som säger att när det körs ett HTTP GET-anrop där id:et är specificerat är det denna metod som körs.
+    [HttpGet("id/{id}")] 
     public async Task<ActionResult<Product>> GetProduct(int id) //async betyder att körs utan att blockera maintråden, Task<T> hör ihop med att den är asynkron.
                                                                 // ActionResult<Product> returnerar antingen en lista med produkter eller ett HTTP-resultat (NotFound(), BadRequest() etc.
     {
         var product = await _context.Product.FindAsync(id); //await hör ihop med att metoden är asynkron. _context är kontakten med databasen. FindAsync letar efter det specifika id:t.
-
-        if (product == null)
-        {
-            return NotFound(); //Retunerar HTTP-resultatet 404 Not Found.
-        }
-
-        return product;
-    }
-
-    //TODO: Gör klart
-    // GET: api/Products/category
-    [HttpGet("{category}")] 
-    public async Task<ActionResult<Product>> GetProductByCategory()
-    { 
-        var product = await _context.Product.FindAsync(); //await hör ihop med att metoden är asynkron. _context är kontakten med databasen. FindAsync letar efter det specifika id:t.
 
         if (product == null)
         {
