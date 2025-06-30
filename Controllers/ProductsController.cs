@@ -18,36 +18,47 @@ public class ProductsController : ControllerBase
     }
 
     // GET: api/Products
+    //Hämtar alla produkter från databasen, om category är angivet i urlen hämtas bara produkterna i den kategorin
     [HttpGet] 
-    public async Task<ActionResult<IEnumerable<Product>>> GetProduct([FromQuery] string? category)
+    public async Task<ActionResult<IEnumerable<CreateProductDto>>> GetProduct([FromQuery] string? category)
     {
-        if (string.IsNullOrEmpty(category))
+        var query = _context.Product.AsQueryable();
+
+        if (!string.IsNullOrEmpty(category))
         {
-            return await _context.Product.ToListAsync();
+            query = query.Where(p => p.Category.ToLower() == category.ToLower());
         }
 
-        var products = await _context.Product
-            .Where(p => p.Category.ToLower() == category.ToLower())
-            .ToListAsync();
+        var products = await query.ToListAsync();
 
         if (!products.Any())
         {
             return NotFound(); 
         }
 
-        return products;
+        var productDtos = products
+            .Select(p => new CreateProductDto(
+                        p.Name,
+                        p.Price,
+                        p.Category,
+                        p.Shelf,
+                        p.Count,
+                        p.Description
+                ))
+            .ToList();
+
+        return Ok(productDtos);
     }
 
     // GET: api/Products/5
     [HttpGet("id/{id}")] 
-    public async Task<ActionResult<Product>> GetProduct(int id) //async betyder att körs utan att blockera maintråden, Task<T> hör ihop med att den är asynkron.
-                                                                // ActionResult<Product> returnerar antingen en lista med produkter eller ett HTTP-resultat (NotFound(), BadRequest() etc.
+    public async Task<ActionResult<Product>> GetProduct(int id) 
     {
-        var product = await _context.Product.FindAsync(id); //await hör ihop med att metoden är asynkron. _context är kontakten med databasen. FindAsync letar efter det specifika id:t.
+        var product = await _context.Product.FindAsync(id); 
 
         if (product == null)
         {
-            return NotFound(); //Retunerar HTTP-resultatet 404 Not Found.
+            return NotFound(); 
         }
 
         return product;
@@ -57,10 +68,8 @@ public class ProductsController : ControllerBase
     [HttpGet("stats")]
     public async Task<ActionResult<ProductStatsDto>> GetProductStats()
     {
-        // Hämta alla produkter från databasen
         var products =  await _context.Product.ToListAsync();
 
-        // Kontrollera om det finns några produkter
         if (!products.Any())
         {
             return Ok(new ProductStatsDto
@@ -87,32 +96,31 @@ public class ProductsController : ControllerBase
     // PUT: api/Products/5
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutProduct(int id, Product product) //Uppdaterar en befintlig produkt som har ett specifikt id i databasen.
+    public async Task<IActionResult> PutProduct(int id, Product product) 
     {
-        if (id != product.Id) //Kontrollerar att idt i URL:en matchar produktens Id. T.ex. PUT /api/products/3
+        if (id != product.Id) 
         {
             return BadRequest();
         }
 
-        _context.Entry(product).State = EntityState.Modified; // Berättar att den här entiteten (produkten) har blvit uppdaterad.
+        _context.Entry(product).State = EntityState.Modified; 
 
         try
         {
-            await _context.SaveChangesAsync(); //SaveChangesAsync förstår att en UPDATE-SQL fråga ska göras eftersom produkten är ändrad (EntityState.Modified). Försöker spara ändringarna.
+            await _context.SaveChangesAsync(); 
         }
-        catch (DbUpdateConcurrencyException) //Kan uppstå om någon annan har ändrat eller tagit bort produkten sen den laddades ner från databasen.
+        catch (DbUpdateConcurrencyException) 
         {
             if (!ProductExists(id))
             {
-                return NotFound(); //Finns inte produkten returneras 404 Not found.
+                return NotFound(); 
             }
             else
             {
                 throw;
             }
         }
-
-        return NoContent(); //Allt gick bra men inget returneras. Standard vid lyckad PUT eftersom inget innehåll skickas tillbaka.
+        return Ok(NoContent());
     }
 
     // POST: api/Products
